@@ -93,3 +93,21 @@ Sale ID: {sale_id}
             logger.info("Cleared notification logs")
         except Exception as e:
             logger.error(f"Failed to clear notifications: {e}")
+    
+    def clear_logs_daily(self):
+        """Clear log and JSON files if the date has changed since last write."""
+        today = datetime.utcnow().strftime('%Y-%m-%d')
+        marker_file = 'sales_notifications.last_cleared'
+        last_cleared = None
+        if os.path.exists(marker_file):
+            with open(marker_file, 'r') as f:
+                last_cleared = f.read().strip()
+        if last_cleared != today:
+            # Clear log and JSON files
+            if os.path.exists(self.log_file):
+                open(self.log_file, 'w').close()
+            if os.path.exists(self.json_file):
+                open(self.json_file, 'w').close()
+            with open(marker_file, 'w') as f:
+                f.write(today)
+            logger.info("Cleared fallback notification logs for new day")

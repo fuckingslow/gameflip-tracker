@@ -153,38 +153,34 @@ class GameflipMonitor:
 
     def process_new_sales(self, sales):
         """Process new sales and send notifications"""
-        last_sale_id = self.storage.get_last_sale_id()
+        last_sale_ids = set(self.storage.get_last_sale_ids())
         new_sales = []
-        
-        # If this is the first run (no last_sale_id), just update the ID and don't spam notifications
-        if not last_sale_id and sales:
-            logger.info("First run detected - setting initial sale ID without sending notifications for historical sales")
-            self.storage.set_last_sale_id(sales[0].get('id'))
+        sales_to_track = sales[:20] if sales else []
+        current_sale_ids = [sale.get('id') for sale in sales_to_track if sale.get('id')]
+
+        # If first run (no last_sale_ids), just store the current 20 and don't send notifications
+        if not last_sale_ids and current_sale_ids:
+            logger.info("First run detected - setting initial sale IDs without sending notifications for historical sales")
+            self.storage.set_last_sale_ids(current_sale_ids)
             return 0
-        
-        for sale in sales:
+
+        # Find sales not in last tracked list
+        for sale in sales_to_track:
             sale_id = sale.get('id')
-            if sale_id and sale_id != last_sale_id:
+            if sale_id and sale_id not in last_sale_ids:
                 new_sales.append(sale)
-            else:
-                # Stop processing when we reach the last known sale
-                break
-        
+
         if new_sales:
-            # Update last sale ID with the most recent one
-            self.storage.set_last_sale_id(new_sales[0].get('id'))
-            
+            # Update tracked sale IDs with the latest 20
+            self.storage.set_last_sale_ids(current_sale_ids)
             # Limit notifications to prevent spam (max 5 at once)
             if len(new_sales) > 5:
                 logger.info(f"Found {len(new_sales)} new sales, sending notifications for the 5 most recent")
                 new_sales = new_sales[:5]
-            
-            # Send notifications for each new sale
             for sale in new_sales:
                 self.send_sale_notification(sale)
                 if len(new_sales) > 1:
-                    time.sleep(0.5)  # 500ms delay = max 2 notifications per second
-        
+                    time.sleep(0.5)
         return len(new_sales)
 
     def send_sale_notification(self, sale):

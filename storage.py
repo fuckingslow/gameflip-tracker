@@ -60,33 +60,20 @@ class SalesStorage:
                 except:
                     pass
     
-    def get_last_sale_id(self):
-        """Get the ID of the last processed sale"""
-        return self.data.get('last_sale_id')
-    
-    def set_last_sale_id(self, sale_id):
-        """Set the ID of the last processed sale"""
-        if sale_id:
-            self.data['last_sale_id'] = sale_id
+    def get_last_sale_ids(self):
+        """Get the list of last processed sale IDs (up to 20)"""
+        return self.data.get('last_sale_ids', [])
+
+    def set_last_sale_ids(self, sale_ids):
+        """Set the list of last processed sale IDs (up to 20)"""
+        if sale_ids:
+            self.data['last_sale_ids'] = sale_ids[:20]
             self.data['last_updated'] = datetime.utcnow().isoformat()
             self._save_data()
-            logger.info(f"Updated last sale ID: {sale_id}")
-    
-    def get_last_updated(self):
-        """Get the timestamp of the last update"""
-        return self.data.get('last_updated')
-    
-    def reset(self):
-        """Reset storage data"""
+            logger.info(f"Updated last sale IDs: {sale_ids[:3]}... (total {len(sale_ids)})")
+
+    def clear_all(self):
+        """Clear all storage data (IDs and timestamps)"""
         self.data = {}
         self._save_data()
-        logger.info("Storage data reset")
-    
-    def get_stats(self):
-        """Get storage statistics"""
-        return {
-            'last_sale_id': self.get_last_sale_id(),
-            'last_updated': self.get_last_updated(),
-            'storage_file': self.storage_file,
-            'file_exists': os.path.exists(self.storage_file)
-        }
+        logger.info("Storage data reset (all IDs cleared)")
