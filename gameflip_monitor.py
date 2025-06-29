@@ -173,10 +173,6 @@ class GameflipMonitor:
         if new_sales:
             # Update tracked sale IDs with the latest 20
             self.storage.set_last_sale_ids(current_sale_ids)
-            # Limit notifications to prevent spam (max 5 at once)
-            if len(new_sales) > 5:
-                logger.info(f"Found {len(new_sales)} new sales, sending notifications for the 5 most recent")
-                new_sales = new_sales[:5]
             for sale in new_sales:
                 self.send_sale_notification(sale)
                 if len(new_sales) > 1:
