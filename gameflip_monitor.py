@@ -185,7 +185,6 @@ class GameflipMonitor:
             sale_id = sale.get('id', 'Unknown')
             listing_id = sale.get('listing_id')
             price = sale.get('price', 0) / 100  # Convert from cents to dollars
-            buyer_id = sale.get('buyer', {}).get('id', 'Unknown')
             created_date = sale.get('created', '')
             
             # Get listing details for item name
@@ -202,7 +201,6 @@ class GameflipMonitor:
                 'item_name': item_name,
                 'item_description': item_description,
                 'price': price,
-                'buyer_id': buyer_id,
                 'created_date': created_date,
                 'listing_id': listing_id
             }
