@@ -61,13 +61,13 @@ class SalesStorage:
                     pass
     
     def get_last_sale_ids(self):
-        """Get the list of last processed sale IDs (up to 20)"""
+        """Get the list of last processed sale IDs (up to 100)"""
         return self.data.get('last_sale_ids', [])
 
     def set_last_sale_ids(self, sale_ids):
-        """Set the list of last processed sale IDs (up to 20)"""
+        """Set the list of last processed sale IDs (up to 100)"""
         if sale_ids:
-            self.data['last_sale_ids'] = sale_ids[:20]
+            self.data['last_sale_ids'] = sale_ids[:100]
             self.data['last_updated'] = datetime.utcnow().isoformat()
             self._save_data()
             logger.info(f"Updated last sale IDs: {sale_ids[:3]}... (total {len(sale_ids)})")

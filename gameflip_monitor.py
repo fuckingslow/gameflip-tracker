@@ -107,7 +107,7 @@ class GameflipMonitor:
             url = f"{self.config.gameflip_api_base}/listing"
             params = {
                 'status': 'sold',
-                'limit': 20,
+                'limit': 100,
                 'owner': self.your_user_id,  # Filter by your user ID
             }
             
@@ -155,7 +155,7 @@ class GameflipMonitor:
         """Process new sales and send notifications"""
         last_sale_ids = set(self.storage.get_last_sale_ids())
         new_sales = []
-        sales_to_track = sales[:20] if sales else []
+        sales_to_track = sales[:100] if sales else []
         current_sale_ids = [sale.get('id') for sale in sales_to_track if sale.get('id')]
 
         # If first run (no last_sale_ids), just store the current 20 and don't send notifications
