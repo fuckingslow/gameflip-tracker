@@ -205,15 +205,14 @@ class GameflipMonitor:
                 'listing_id': listing_id
             }
             
-            # Try Discord first, fallback to file logging if blocked
+            # Try Discord first, fallback to file logging if blocked, and queue for retry
             success = self.discord_notifier.send_sale_notification(notification_data)
             
             if success:
                 logger.info(f"Discord notification sent for sale: {sale_id} - {item_name} - ${price:.2f}")
             else:
-                # Fallback to file logging when Discord is blocked
-                logger.warning(f"Discord blocked, logging sale to file: {sale_id} - {item_name} - ${price:.2f}")
-                self.alt_notifier.log_sale_notification(notification_data)
+                logger.warning(f"Discord blocked, queueing for retry: {sale_id} - {item_name} - ${price:.2f}")
+                self.alt_notifier.queue_failed_discord_notification(notification_data)
                 
         except Exception as e:
             logger.error(f"Error processing sale notification: {e}")
@@ -222,7 +221,10 @@ class GameflipMonitor:
         """Run a single monitoring cycle"""
         try:
             logger.info("Checking for new sales...")
-            
+            # Retry failed Discord notifications first
+            sent_ids = self.alt_notifier.retry_failed_discord_notifications(self.discord_notifier)
+            if sent_ids:
+                logger.info(f"Retried and sent {len(sent_ids)} previously failed Discord notifications.")
             # Get recent sales
             sales = self.get_recent_sales()
             
